@@ -1,6 +1,8 @@
 import networkx as nx
 import itertools
 import sys
+import matplotlib.pyplot as plt
+
 
 def transform_graph(G, budget):
     
@@ -85,6 +87,32 @@ def exhaustive_vertex_cover_search(G, budget):
     
     return None
 
+def visualize_graph(G, title, filename, highlight_nodes=None):
+    plt.figure(figsize=(10, 8))
+    pos = nx.spring_layout(G, seed=42)  # consistent layout
+    
+    # Draw all nodes
+    nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=300)
+    
+    # Draw edges
+    nx.draw_networkx_edges(G, pos)
+    
+    # Highlight specific nodes if provided
+    if highlight_nodes:
+        nx.draw_networkx_nodes(G, pos, 
+                                nodelist=list(highlight_nodes), 
+                                node_color='red', 
+                                node_size=400)
+    
+    # Draw labels
+    nx.draw_networkx_labels(G, pos)
+    
+    plt.title(title)
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig(filename)
+    plt.close()  # Close the plot to free up memory
+
 def main():
     
     budget = int(input("Enter budget: "))
@@ -114,9 +142,15 @@ def main():
         G.add_edges_from(edges)
         G.add_nodes_from(isolated_vertices)  # Add isolated vertices
 
+        # Visualize original graph
+        visualize_graph(G, "Original Graph", "original.png")
+
         # Problem 1 - Transform the graph
         # We overwrite the isolated vertices variable to store the isolated vertices obtained from the transformation
         transformed_graph, new_budget, isolated_vertices = transform_graph(G, budget)
+        
+        # Visualize transformed graph
+        visualize_graph(transformed_graph, "Transformed Graph", "transform.png")
         
         print("Original Graph:")
         print("Edges:", list(G.edges()))
@@ -131,11 +165,14 @@ def main():
         # Find minimum dominating set
         resulting_size, candidate_set = find_minimum_dominating_set(transformed_graph, new_budget)
         
-        # Check vertex cover possibility
+        # Visualize Dominating Set if possible
         if resulting_size is not None:
             # Remove isolated vertices from the result
             non_isolated_result = resulting_size - len(set(isolated_vertices))
             non_isolated_result_vertex = set(candidate_set) - set(isolated_vertices)
+
+            visualize_graph(transformed_graph, "Dominating Set in Transformed Graph", 
+                            "ds.png", highlight_nodes=candidate_set)
 
             if non_isolated_result <= budget:
                 print("\nIt is possible to find a Vertex Cover with original budget.")
@@ -149,15 +186,18 @@ def main():
         print("\nPerforming exhaustive search to confirm if a solution or no solution exists...")
         exhaustive_result = exhaustive_vertex_cover_search(G, budget)
         
-        if exhaustive_result is None:
-            print(f"Confirmed: No Vertex Cover exists for the graph with budget {budget}.")
-            print("Exhaustive search checked all possible combinations.")
-        else:
+        # Visualize Vertex Cover if found
+        if exhaustive_result is not None:
+            visualize_graph(G, "Vertex Cover in Original Graph", 
+                            "vc.png", highlight_nodes=exhaustive_result)
             print("A Vertex Cover was found during exhaustive search.")
             print("Vertex Cover:", exhaustive_result)
+        else:
+            print(f"Confirmed: No Vertex Cover exists for the graph with budget {budget}.")
+            print("Exhaustive search checked all possible combinations.")
         
         # Restore stdout
         sys.stdout = original_stdout
-
+        
 if __name__ == "__main__":
     main()
