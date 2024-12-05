@@ -178,6 +178,7 @@ def main():
                 print("\nIt is possible to find a Vertex Cover with original budget.")
                 print("Vertex Cover of size", non_isolated_result, "is:", non_isolated_result_vertex)
             else:
+                print("This line should not be printed.")
                 print(f"\nIt is not possible to find a Vertex Cover with original budget.")
                 print(f"However, it is possible to find a Vertex Cover with budget {non_isolated_result}.")
                 print("Minimum Vertex Cover of size", non_isolated_result, "is:", non_isolated_result_vertex)
